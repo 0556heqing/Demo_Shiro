@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.heqing.shiro.dao.IUserDao">
+
+    <resultMap id="userResult" type="userEntity" >
+        <id 	column="u_userId" 		property="userId" />
+        <result column="u_userName" 	property="userName" />   
+        <result column="u_password"  	property="password" />   
+        <result column="u_email"  		property="email" /> 
+        <result column="u_mobile"  		property="mobile" /> 
+        <result column="u_status"  		property="status" /> 
+        <result column="u_createTime" 	property="createTime" />  
+    </resultMap>
+
+    <sql id="Base_Column">
+    	u._userId u_userId, u._userName u_userName, u._password u_password, u._email u_email, 
+    	u._mobile u_mobile, u._status u_status, u._createTime u_createTime
+    </sql>
+ 
+    <insert id="save" keyColumn="_userId" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user
+        	(_userId, _userName, _password, _email, _mobile, _status, _createTime) 
+        values 
+        	(#{userId},#{userName},#{password}, #{email}, #{mobile}, #{status}, #{createTime,jdbcType=TIMESTAMP})
+    </insert>
+    
+    <delete id="delete" parameterType="Long">
+        delete from t_user where _userId = #{userId};
+        delete from t_user_role where _userId = #{userId};
+    </delete>
+    
+    <delete id="deleteBatch">
+		delete from t_user where _userId in 
+		<foreach item="userId" collection="array" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+		;
+		 delete from t_user_role where _userId in 
+		<foreach item="userId" collection="array" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+	</delete>
+
+    <update id="update" parameterType="userEntity">
+        update t_user set 
+            _userName = #{userName}, _password = #{password}, _email = #{email}, _mobile = #{mobile}, _status = #{status}, _createTime = #{createTime,jdbcType=TIMESTAMP}
+        where 
+        	_userId = #{userId}
+    </update>
+
+    <select id="getById" parameterType="Long" resultMap="userResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_user u
+        where u._userId = #{userId}
+    </select>
+    
+    <select id="getByIds" parameterType="Long[]" resultMap="userResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_user u
+        where _userId in
+	    	<foreach collection="array" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}   
+	    	</foreach>  
+    </select>
+    
+    <select id="getAllList" resultMap="userResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_user u 
+    </select>
+
+    <select id="getListByCondition" resultMap="userResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_user u 
+        <where>  
+		    <if test="userName != null">
+		    	u._userName LIKE CONCAT('%',#{userName},'%')  
+		    </if>
+		    <if test="password != null">
+		        AND u._password = #{password} 
+		    </if>
+		    <if test="email != null">
+		        AND u._email = #{email} 
+		    </if>
+		    <if test="mobile != null">
+		        AND u._mobile = #{mobile} 
+		    </if>
+		    <if test="status != null">
+		        AND u._status = #{status} 
+		    </if>
+	    </where>
+    </select>
+    
+    <select id="getPageBean"  resultMap="userResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_user u 
+	    <if test="pageNum != 0 or pageSize != 0">
+	        limit #{pageNum} , #{pageSize} 
+	    </if>
+    </select>
+
+	<select id="getPageBeanByCondition"  resultMap="userResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_user u 
+        <where> 
+		    <if test="entity!= null and entity.userName != null">
+		   		u._userName LIKE CONCAT('%', #{entity.userName},'%')  
+		    </if>
+		    <if test="entity!= null and entity.password != null">
+		        AND u._password = #{entity.password} 
+		    </if>
+		    <if test="entity!= null and entity.email != null">
+		        AND u._email = #{entity.email} 
+		    </if>
+		    <if test="entity!= null and entity.mobile != null">
+		        AND u._mobile = #{entity.mobile} 
+		    </if>
+		    <if test="entity!= null and entity.status != null">
+		        AND u._status = #{entity.status} 
+		    </if>
+	    </where>
+	    <if test="pageNum != 0 or pageSize != 0">
+	        limit #{pageNum} , #{pageSize} 
+	    </if>
+    </select>
+    
+    <!-- 查询用户的所有细粒度权限 -->
+	<select id="getMenuPermsByUserId" resultType="String">
+		select m._perms from t_user_role ur 
+			LEFT JOIN t_role_menu rm on ur._roleId = rm._roleId 
+			LEFT JOIN t_menu m on rm._menuId = m._menuId
+		where ur._userId = #{userId}
+	</select>
+	
+	<!-- 根据用户名查询用户信息 -->
+	<select id="geUserByName" parameterType="String" resultMap="userResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_user u
+        where u._userName = #{userName}
+    </select>
+    
+    <delete id="deleteUserRoleByUserId">
+		delete from t_user_role where _userId = #{userId}
+	</delete>
+	
+	<insert id="saveUserRole">
+		insert into t_user_role (
+			_userId, 
+			_roleId
+		) values
+		<foreach collection="roleIdList" item="item" index="index" separator="," >
+			( #{userId},  #{item} )
+		</foreach>
+	</insert>
+</mapper>

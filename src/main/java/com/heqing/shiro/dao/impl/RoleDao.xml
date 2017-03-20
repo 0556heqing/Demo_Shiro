@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.heqing.shiro.dao.IRoleDao">
+
+    <resultMap id="roleResult" type="roleEntity" >
+        <id 	column="r_roleId" 		property="roleId" />
+        <result column="r_roleName" 	property="roleName" />   
+        <result column="r_remark"  		property="remark" />   
+        <result column="r_createTime" 	property="createTime" />   
+    </resultMap>
+    
+    <sql id="Base_Column">
+    	r._roleId r_roleId, r._roleName r_roleName, r._remark r_remark, r._createTime r_createTime
+    </sql>
+ 
+    <insert id="save" keyColumn="_roleId" keyProperty="id" useGeneratedKeys="true">
+        insert into t_role
+        	(_roleId, _roleName, _remark, _createTime) 
+        values 
+        	(#{roleId}, #{roleName}, #{remark}, #{createTime,jdbcType=TIMESTAMP})
+    </insert>
+    
+    <delete id="delete" parameterType="Long">
+        delete from t_role where _roleId = #{roleId};
+        delete from t_user_role where _roleId = #{roleId};
+        delete from t_role_menu where _roleId = #{roleId};
+    </delete>
+    
+    <delete id="deleteBatch">
+		delete from t_role where _roleId in 
+		<foreach item="roleId" collection="array" open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+		;
+		delete from t_user_role where _roleId in 
+		<foreach item="roleId" collection="array" open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+		;
+		delete from t_role_menu where _roleId in 
+		<foreach item="roleId" collection="array" open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+	</delete>
+
+    <update id="update" parameterType="roleEntity">
+        update t_role set 
+            _roleName = #{roleName}, _remark = #{remark}, _createTime = #{createTime,jdbcType=TIMESTAMP}
+        where 
+        	_roleId = #{roleId}
+    </update>
+
+    <select id="getById" parameterType="Long" resultMap="roleResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_role r 
+        where r._roleId = #{roleId}
+    </select>
+    
+    <select id="getByIds" parameterType="Long[]" resultMap="roleResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_role r 
+        where _roleId in
+	    	<foreach collection="array" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}   
+	    	</foreach>  
+    </select>
+    
+    <select id="getAllList" resultMap="roleResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_role r 
+    </select>
+
+    <select id="getListByCondition" resultMap="roleResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_role r 
+        <where> 
+		    <if test="roleName != null">
+		    	r._roleName LIKE CONCAT('%',#{roleName},'%') 
+		    </if>
+		    <if test="remark != null">
+		        AND r._remark = #{remark} 
+		    </if>
+	    </where>
+    </select>
+    
+    <select id="getPageBean" resultMap="roleResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_role r 
+	    <if test="pageNum != 0 or pageSize != 0">
+	        limit #{pageNum} , #{pageSize} 
+	    </if>
+    </select>
+
+	<select id="getPageBeanByCondition" resultMap="roleResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_role r 
+        <where> 
+		    <if test="entity!= null and entity.roleName != null">
+		    	r._roleName LIKE CONCAT('%',#{entity.roleName},'%') 
+		    </if>
+		    <if test="entity!= null and entity.remark != null">
+		        AND r._remark LIKE CONCAT('%', #{entity.remark} ,'%')
+		    </if>
+	    </where>
+	    <if test="pageNum != 0 or pageSize != 0">
+	        limit #{pageNum} , #{pageSize} 
+	    </if>
+    </select>
+    
+    <select id="getRoleListByUserId" resultMap="roleResult">
+        select 
+        	<include refid="Base_Column"/>
+        from t_role r, t_user_role ur
+		WHERE r._roleId = ur._roleId AND ur._userId = #{userId}
+    </select>
+    
+    <delete id="deleteRoleMenuByRoleId">
+		delete from t_role_menu where _roleId = #{roleId}
+	</delete>
+	
+	<insert id="saveUserRole">
+		insert into t_role_menu (
+			_roleId, 
+			_menuId
+		) values
+		<foreach collection="menuIdList" item="item" index="index" separator="," >
+			( #{roleId},  #{item} )
+		</foreach>
+	</insert>
+</mapper>

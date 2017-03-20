@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.heqing.shiro.dao.IMenuDao">
+
+    <resultMap id="menuResult" type="menuEntity" >
+        <id 	column="m_menuId" 	property="menuId" />
+        <result column="m_parentId" property="parentId" />   
+        <result column="m_name"  	property="name" />   
+        <result column="m_url" 		property="url" />   
+        <result column="m_perms" 	property="perms" />   
+        <result column="m_type" 	property="type" />   
+        <result column="m_icon" 	property="icon" />   
+        <result column="m_orderNum" property="orderNum" /> 
+      </resultMap>
+    
+    <sql id="Base_Column">
+    	m._menuId m_menuId, m._parentId m_parentId, m._name m_name, m._url m_url, 
+    	m._perms m_perms, m._type m_type, m._icon m_icon, m._orderNum m_orderNum
+    </sql>
+ 
+    <insert id="save" keyColumn="_menuId" keyProperty="id" useGeneratedKeys="true">
+        insert into t_menu
+        	(_menuId, _parentId, _name, _url, _perms, _type, _icon, _orderNum) 
+        values 
+        	(#{menuId}, #{parentId}, #{name}, #{url}, #{perms}, #{type}, #{icon}, #{orderNum})
+    </insert>
+    
+    <delete id="delete" parameterType="Long">
+        delete from t_menu where _menuId = #{menuId};
+        delete from t_role_menu where _menuId = #{menuId};
+    </delete>
+    
+    <delete id="deleteBatch">
+		delete from t_menu where _menuId in 
+		<foreach item="menuId" collection="array" open="(" separator="," close=")">
+			#{menuId}
+		</foreach>
+		;
+		delete from t_role_menu where _menuId in 
+		<foreach item="menuId" collection="array" open="(" separator="," close=")">
+			#{menuId}
+		</foreach>
+	</delete>
+
+    <update id="update" parameterType="menuEntity">
+        update t_menu set 
+            _parentId = #{parentId}, _name = #{name}, _url = #{url}, _perms = #{perms} , _type = #{type}, _icon = #{icon}, _orderNum = #{orderNum}
+        where 
+        	_menuId = #{menuId}
+    </update>
+
+    <select id="getById" parameterType="Long" resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m 
+        where m._menuId = #{menuId}
+    </select>
+    
+    <select id="getByIds" parameterType="Long[]" resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m 
+        where _menuId in
+	    	<foreach collection="array" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}   
+	    	</foreach>  
+    </select>
+    
+    <select id="getAllList" resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m
+    </select>
+
+    <select id="getListByCondition" resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m
+        <where> 
+		    <if test="parentId != null">
+		    	m._parentId = #{parentId}
+		    </if> 
+		    <if test="name != null">
+		    	AND m._name = #{name} 
+		    </if>
+		    <if test="url != null">
+		        AND m._url = #{url} 
+		    </if>
+		    <if test="perms != null">
+		        AND m._perms LIKE CONCAT('%',#{perms},'%')  
+		    </if>
+		    <if test="type != null">
+		        AND m._type = #{type} 
+		    </if>
+		    <if test="icon != null">
+		        AND m._icon = #{icon} 
+		    </if>
+		    <if test="orderNum != null">
+		        AND m._orderNum = #{orderNum} 
+		    </if>
+	    </where>
+    </select>
+    
+    <select id="getPageBean"  resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m
+	    <if test="pageNum != 0 or pageSize != 0">
+	        limit #{pageNum} , #{pageSize} 
+	    </if>
+    </select>
+
+	<select id="getPageBeanByCondition"  resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m
+        <where> 
+		    <if test="entity!= null and entity.parentId != null">
+		    	m._parentId = #{parentId}
+		    </if> 
+		    <if test="entity!= null and entity.name != null">
+		    	AND m._name = #{entity.name} 
+		    </if>
+		    <if test="entity!= null and entity.url != null">
+		        AND m._url = #{entity.url} 
+		    </if>
+		    <if test="entity!= null and entity.perms != null">
+		        AND m._perms LIKE CONCAT('%',#{entity.perms},'%')  
+		    </if>
+		    <if test="entity!= null and entity.type != null">
+		        AND m._type = #{entity.type} 
+		    </if>
+		    <if test="entity!= null and entity.icon != null">
+		        AND m._icon = #{entity.icon} 
+		    </if>
+		    <if test="entity!= null and entity.orderNum != null">
+		        AND m._orderNum = #{entity.orderNum} 
+		    </if>
+	    </where>
+	    <if test="pageNum != 0 or pageSize != 0">
+	        limit #{pageNum} , #{pageSize} 
+	    </if>
+    </select>
+    
+    <select id="getMenuListByUserId" resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m, t_role_menu rm, t_role r, t_user_role ur
+		where ur._roleId = r._roleId AND rm._roleId = r._roleId
+			AND rm._menuId = m._menuId AND ur._userId = #{userId} 
+		GROUP BY m._menuId
+    </select>
+    
+    <select id="getMenuListByRoleId" resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m, t_role_menu rm
+		where rm._menuId = m._menuId AND rm._roleId = #{roleId} 
+    </select>
+    
+    <select id="getMenuListByParentId" resultMap="menuResult">
+		select 
+			<include refid="Base_Column"/>
+		from t_menu m
+		where _parentId = #{menuId}  order by _orderNum asc 
+	</select>
+    
+    <select id="getMenuListNotButton" resultMap="menuResult">
+        select 
+        	<include refid="Base_Column"/> 
+        from t_menu m 
+		where m._type != 2 
+    </select>
+</mapper>
