@@ -104,7 +104,8 @@ public class RoleController extends BaseController {
 	@RequiresPermissions("sys:role:update")
 	public ResultUtil update(@RequestBody RoleEntity role){
 		if(StringUtils.isBlank(role.getRoleName())) return ResultUtil.error("角色名称不能为空");
-		roleService.update(role);	
+		roleService.update(role);
+		roleService.deleteRoleMenuByRoleId(role.getRoleId());
 		roleService.saveUserRole(role.getRoleId(), role.getMenuIdList());
 		return ResultUtil.ok();
 	}

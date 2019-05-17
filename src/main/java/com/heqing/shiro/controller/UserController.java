@@ -161,6 +161,7 @@ public class UserController extends BaseController {
 		if(StringUtils.isBlank(user.getPassword())) return ResultUtil.error("密码不能为空");
 		user.setPassword(new Sha256Hash(user.getPassword()).toHex());
 		userService.update(user);
+		userService.deleteUserRoleByUserId(user.getUserId());
 		userService.saveUserRole(user.getUserId(), user.getRoleIdList());
 		return ResultUtil.ok();
 	}

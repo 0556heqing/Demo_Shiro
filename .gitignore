@@ -1,0 +1,36 @@
+# maven ignore
+target/
+gateway-service/target
+yz-service-remote/target
+gateway-api/target/
+*.jar
+*.war
+*.zip
+*.tar
+*.iml
+*.tar.gz
+/bin
+*/bin/*
+# eclipse ignore
+.settings/
+.project
+.classpath
+/target
+
+# idea ignore
+.idea/
+*.ipr
+*.iml
+*.iws
+.metadata
+# temp ignore
+*.log
+*.cache
+*.diff
+*.patch
+*.tmp
+*.log.*
+
+# system ignore
+.DS_Store
+Thumbs.db

@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.heqing.shiro.base.BaseServiceImpl;
@@ -19,7 +18,6 @@ public class RoleService extends BaseServiceImpl<RoleEntity> implements IRoleSer
 	private IRoleDao roleDao;
 	
 	@Override
-	@Cacheable(value="shiro", key="#root.targetClass+#root.methodName") 
 	public List<RoleEntity> getRoleListByUserId(Long userId) {
 		// TODO Auto-generated method stub
 		return roleDao.getRoleListByUserId(userId);

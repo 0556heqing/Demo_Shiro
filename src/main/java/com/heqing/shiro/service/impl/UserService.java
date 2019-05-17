@@ -3,8 +3,6 @@ package com.heqing.shiro.service.impl;
 import java.util.List;
 
 import javax.annotation.Resource;
-
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.heqing.shiro.base.BaseServiceImpl;
@@ -19,7 +17,6 @@ public class UserService extends BaseServiceImpl<UserEntity> implements IUserSer
 	private IUserDao userDao;
 
 	@Override
-	@Cacheable(value="shiro", key="#root.targetClass+#root.methodName") 
 	public List<String> getMenuPermsByUserId(Long userId) {
 		// TODO Auto-generated method stub
 		return userDao.getMenuPermsByUserId(userId);

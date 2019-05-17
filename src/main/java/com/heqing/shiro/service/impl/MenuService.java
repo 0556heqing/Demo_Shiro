@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.heqing.shiro.base.BaseServiceImpl;
@@ -34,8 +33,7 @@ public class MenuService extends BaseServiceImpl<MenuEntity> implements IMenuSer
 		}
 		return getAllMenuList(menusIds);
 	}
-	
-	@Cacheable(value="shiro", key="#root.targetClass+#root.methodName") 
+
 	public List<MenuEntity> getMenuListByUserId(Long userId, Integer menuType) {
 		List<MenuEntity> menuList = new ArrayList<>();
 		List<MenuEntity> tempMenuList = getMenuListByUserId(userId);
@@ -46,21 +44,18 @@ public class MenuService extends BaseServiceImpl<MenuEntity> implements IMenuSer
 	}
 
 	@Override
-	@Cacheable(value="shiro", key="#root.targetClass+#root.methodName") 
 	public List<MenuEntity> getMenuListByRoleId(Long roleId) {
 		// TODO Auto-generated method stub
 		return menuDao.getMenuListByRoleId(roleId);
 	}
 
 	@Override
-	@Cacheable(value="shiro", key="#root.targetClass+#root.methodName") 
 	public List<MenuEntity> getMenuListByParentId(Long parentId) {
 		// TODO Auto-generated method stub
 		return menuDao.getMenuListByParentId(parentId);
 	}
 	
 	@Override
-	@Cacheable(value="shiro", key="#root.targetClass+#root.methodName") 
 	public List<MenuEntity> getMenuListNotButton() {
 		// TODO Auto-generated method stub
 		return menuDao.getMenuListNotButton();
